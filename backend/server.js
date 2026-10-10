@@ -1,42 +1,82 @@
-
 const express = require("express");
 const path = require("path");
-const fs = require("fs");
+const db = require("./db");
 
 const app = express();
 const PORT = 3000;
 
-const dataPath = path.join(__dirname, "data", "plants.json");
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "..", "frontend")));
 
-
 function getPlants() {
-    const data = fs.readFileSync(dataPath, "utf8");
-    return JSON.parse(data).plants;
+    const plants = db.prepare(`
+        SELECT
+            id,
+            name,
+            scientific_name AS scientificName,
+            description,
+            image
+        FROM plants
+        ORDER BY id
+    `).all();
+
+    return plants.map(plant => ({
+        ...plant,
+        synonyms: db.prepare(`
+            SELECT synonym
+            FROM plant_synonyms
+            WHERE plant_id = ?
+            ORDER BY id
+        `).all(String(plant.id)).map(row => row.synonym),
+        growingTips: db.prepare(`
+            SELECT tip
+            FROM plant_tips
+            WHERE plant_id = ?
+            ORDER BY id
+        `).all(String(plant.id)).map(row => row.tip),
+        compatible: db.prepare(`
+            SELECT
+                related_plant_name AS name,
+                reason,
+                verified
+            FROM plant_relationships
+            WHERE plant_id = ? AND relationship_type = 'compatible'
+            ORDER BY id
+        `).all(String(plant.id)).map(row => ({
+            ...row,
+            verified: Boolean(row.verified)
+        })),
+        incompatible: db.prepare(`
+            SELECT
+                related_plant_name AS name,
+                reason,
+                verified
+            FROM plant_relationships
+            WHERE plant_id = ? AND relationship_type = 'incompatible'
+            ORDER BY id
+        `).all(String(plant.id)).map(row => ({
+            ...row,
+            verified: Boolean(row.verified)
+        }))
+    }));
 }
 
 app.get("/api/plants", (req, res) => {
-    const plants = getPlants();
-    res.json(plants);
+    res.json(getPlants());
 });
-
 
 app.get("/api/plants/suggestions", (req, res) => {
     const query = (req.query.q || "").trim().toLocaleLowerCase("ru-RU");
 
-    if (query.length < 1) {
+    if (!query) {
         return res.json([]);
     }
 
-    const plants = getPlants();
-
-    const matches = plants.filter(plant => {
+    const matches = getPlants().filter(plant => {
         const names = [
             plant.name,
             plant.scientificName,
-            ...(plant.synonyms || [])
+            ...plant.synonyms
         ];
 
         return names.some(value =>
@@ -52,7 +92,6 @@ app.get("/api/plants/suggestions", (req, res) => {
     })));
 });
 
-
 app.get("/api/plants/search", (req, res) => {
     const name = (req.query.name || "").trim().toLocaleLowerCase("ru-RU");
 
@@ -62,13 +101,11 @@ app.get("/api/plants/search", (req, res) => {
         });
     }
 
-    const plants = getPlants();
-
-    const matches = plants.filter(plant => {
+    const matches = getPlants().filter(plant => {
         const names = [
             plant.name,
             plant.scientificName,
-            ...(plant.synonyms || [])
+            ...plant.synonyms
         ];
 
         return names.some(value =>
@@ -89,4 +126,14 @@ app.get("/api/plants/search", (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Сервер запущен: http://localhost:${PORT}`);
+});
+
+process.on("SIGINT", () => {
+    db.close();
+    process.exit(0);
+});
+
+process.on("SIGTERM", () => {
+    db.close();
+    process.exit(0);
 });
