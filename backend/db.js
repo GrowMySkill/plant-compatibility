@@ -50,6 +50,16 @@ db.exec(`
 
     CREATE INDEX IF NOT EXISTS idx_plant_relationships_plant_id
     ON plant_relationships(plant_id);
+
+CREATE INDEX IF NOT EXISTS idx_plants_name
+ON plants(name COLLATE NOCASE);
+
+CREATE INDEX IF NOT EXISTS idx_plants_scientific_name
+ON plants(scientific_name COLLATE NOCASE);
+
+CREATE INDEX IF NOT EXISTS idx_plant_synonyms_synonym
+ON plant_synonyms(synonym COLLATE NOCASE);
+
 `);
 
 function initializeDatabase() {
