@@ -75,8 +75,17 @@ async function renderFavorites() {
         }
 
         favoritesList.innerHTML = favoritePlants.map(plant => `
-            <article class="favorite-card">
-                <div class="favorite-card-info">
+<article class="favorite-card">
+    ${plant.image
+                ? `<img
+            class="favorite-plant-image"
+            src="${escapeHTML(plant.image)}"
+            alt="${escapeHTML(plant.name)}"
+            loading="lazy"
+            onerror="this.style.display='none'"
+        >`
+                : ""}
+    <div class="favorite-card-info">
                     <h3>${escapeHTML(plant.name)}</h3>
                     <p>${escapeHTML(plant.scientificName || "")}</p>
                 </div>
@@ -198,7 +207,9 @@ function renderPlant(plant) {
     resultsContainer.innerHTML = `
         <div class="plant-result">
             <div class="plant-result-header">
-                <div class="plant-symbol">♧</div>
+                ${plant.image
+            ? `<img class="plant-photo" src="${escapeHTML(plant.image)}" alt="${escapeHTML(plant.name)}" loading="lazy" onerror="this.style.display='none'">`
+            : '<div class="plant-symbol">♧</div>'}
                 <div class="plant-title">
                     <span class="eyebrow">РЕЗУЛЬТАТ ПОИСКА</span>
                     <h2>${escapeHTML(plant.name)}</h2>
@@ -395,3 +406,109 @@ searchInput.addEventListener("input", () => {
 });
 
 document.addEventListener("click", hideSuggestionsOnOutsideClick);
+const catalogSearch = document.querySelector("#catalog-search");
+const catalogGrid = document.querySelector("#catalog-grid");
+const catalogCount = document.querySelector("#catalog-count");
+
+let catalogPlants = [];
+
+async function loadCatalog() {
+    if (!catalogGrid || !catalogCount) return;
+
+    try {
+        const response = await fetch("/api/plants");
+
+        if (!response.ok) {
+            throw new Error("Не удалось загрузить каталог");
+        }
+
+        const data = await response.json();
+        catalogPlants = Array.isArray(data) ? data : data.plants || [];
+
+        renderCatalog(catalogPlants);
+    } catch (error) {
+        catalogCount.textContent = "Не удалось загрузить растения";
+        catalogGrid.innerHTML = `
+            <p class="catalog-empty">
+                Проверь, запущен ли сервер, и обнови страницу.
+            </p>
+        `;
+        console.error("Ошибка каталога:", error);
+    }
+}
+
+function renderCatalog(plants) {
+    catalogCount.textContent = `Найдено растений: ${plants.length}`;
+
+    if (plants.length === 0) {
+        catalogGrid.innerHTML = `
+            <p class="catalog-empty">
+                Растения не найдены. Попробуй изменить запрос.
+            </p>
+        `;
+        return;
+    }
+
+    catalogGrid.innerHTML = plants.map(plant => `
+        <article class="catalog-card">
+            ${plant.image
+            ? `<img
+        class="catalog-card-image"
+        src="${escapeHTML(plant.image)}"
+        alt="${escapeHTML(plant.name)}"
+        loading="lazy"
+        onerror="this.style.display='none'"
+    >`
+            : '<div class="catalog-card-symbol">♧</div>'}
+            <h3>${escapeHTML(plant.name)}</h3>
+            <p class="catalog-scientific">
+                ${escapeHTML(plant.scientificName || "Научное название не указано")}
+            </p>
+            <p class="catalog-description">
+                ${escapeHTML(plant.description || "Описание пока не добавлено.")}
+            </p>
+            <button type="button" class="catalog-open-button" data-catalog-plant="${plant.id}">
+                Подробнее →
+            </button>
+        </article>
+    `).join("");
+
+    catalogGrid.querySelectorAll("[data-catalog-plant]").forEach(button => {
+        button.addEventListener("click", () => {
+            const plant = catalogPlants.find(item =>
+                Number(item.id) === Number(button.dataset.catalogPlant)
+            );
+
+            if (!plant) return;
+
+            searchInput.value = plant.name;
+            searchPlant(plant.name);
+            document.querySelector("#search")?.scrollIntoView({
+                behavior: "smooth"
+            });
+        });
+    });
+}
+
+if (catalogSearch) {
+    catalogSearch.addEventListener("input", () => {
+        const query = catalogSearch.value.trim().toLowerCase();
+
+        const filteredPlants = catalogPlants.filter(plant => {
+            const name = (plant.name || "").toLowerCase();
+            const scientificName = (plant.scientificName || "").toLowerCase();
+
+            const synonyms = Array.isArray(plant.synonyms)
+                ? plant.synonyms.join(" ").toLowerCase()
+                : "";
+
+            return name.includes(query)
+                || scientificName.includes(query)
+                || synonyms.includes(query);
+        });
+
+        renderCatalog(filteredPlants);
+    });
+}
+
+loadCatalog();
