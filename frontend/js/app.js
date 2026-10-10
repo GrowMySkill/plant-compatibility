@@ -438,7 +438,7 @@ async function loadCatalog() {
 }
 
 function renderCatalog(plants) {
-    catalogCount.textContent = `Найдено растений: ${plants.length}`;
+    catalogCount.textContent = `Растений в каталоге: ${plants.length}`;
 
     if (plants.length === 0) {
         catalogGrid.innerHTML = `
@@ -473,19 +473,11 @@ function renderCatalog(plants) {
         </article>
     `).join("");
 
+
     catalogGrid.querySelectorAll("[data-catalog-plant]").forEach(button => {
         button.addEventListener("click", () => {
-            const plant = catalogPlants.find(item =>
-                Number(item.id) === Number(button.dataset.catalogPlant)
-            );
-
-            if (!plant) return;
-
-            searchInput.value = plant.name;
-            searchPlant(plant.name);
-            document.querySelector("#search")?.scrollIntoView({
-                behavior: "smooth"
-            });
+            const plantId = button.dataset.catalogPlant;
+            window.location.href = `plant.html?id=${encodeURIComponent(plantId)}`;
         });
     });
 }

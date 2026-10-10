@@ -653,14 +653,21 @@ img {
   }
   .nav {
     order: 3;
+    display: flex;
+    flex-wrap: wrap;
     width: 100%;
-    justify-content: space-between;
-    gap: 12px;
-    padding-top: 8px;
+    justify-content: flex-start;
+    gap: 6px 12px;
+    padding-top: 12px;
     border-top: 1px solid var(--border);
   }
+
   .nav a {
-    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    font-size: 12px;
+    white-space: nowrap;
   }
   .header-button {
     gap: 8px;
@@ -994,7 +1001,15 @@ img {
     padding: 18px;
   }
   .plant-result-header {
+    flex-wrap: wrap;
+    min-width: 0;
     gap: 12px;
+  }
+  .plant-result-header .favorite-button {
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
   .plant-symbol {
     width: 48px;
@@ -1139,370 +1154,410 @@ img {
 }
 
 .favorite-button {
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: #fffef9;
-    color: var(--green);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fffef9;
+  color: var(--green);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .favorite-button:hover,
 .favorite-button.is-favorite {
-    background: var(--green-light);
-    color: var(--green);
-    border-color: var(--sage);
+  background: var(--green-light);
+  color: var(--green);
+  border-color: var(--sage);
 }
 
 .plant-description {
-    margin: 18px 0;
-    color: var(--text);
-    line-height: 1.7;
+  margin: 18px 0;
+  color: var(--text);
+  line-height: 1.7;
 }
 
 .growing-tips {
-    margin: 16px 0;
-    padding: 18px 22px;
-    border-radius: 12px;
-    background: #f4f6ed;
+  margin: 16px 0;
+  padding: 18px 22px;
+  border-radius: 12px;
+  background: #f4f6ed;
 }
 
 .growing-tips h3 {
-    margin-top: 0;
-    color: var(--green);
+  margin-top: 0;
+  color: var(--green);
 }
 
 .growing-tips li {
-    margin: 8px 0;
-    line-height: 1.5;
+  margin: 8px 0;
+  line-height: 1.5;
 }
 .catalog-section {
-    padding: 80px 0;
-    background: #f8f7f0;
+  padding: 80px 0;
+  background: #f8f7f0;
 }
+
 .catalog-heading {
-    max-width: 680px;
-    margin-bottom: 36px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto 36px;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
+
 .catalog-heading h2 {
-    margin: 12px 0;
-    color: var(--green);
-    font-family: "Playfair Display", serif;
-    font-size: clamp(30px, 4vw, 44px);
+  margin: 12px 0;
+  color: var(--green);
+  font-family: "Playfair Display", serif;
+  font-size: clamp(30px, 4vw, 44px);
 }
 .catalog-heading p {
-    color: var(--muted);
-    line-height: 1.7;
+  color: var(--muted);
+  line-height: 1.7;
 }
+
 .catalog-controls {
-    margin-bottom: 28px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto 28px;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
+
 .catalog-controls label {
-    display: block;
-    margin-bottom: 10px;
-    color: var(--green);
-    font-weight: 600;
+  display: block;
+  margin-bottom: 10px;
+  color: var(--green);
+  font-weight: 600;
 }
 .catalog-controls input {
-    width: 100%;
-    max-width: 520px;
-    padding: 15px 18px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    outline: none;
-    background: #fffef9;
-    color: var(--green);
-    font: inherit;
+  width: 100%;
+  max-width: 520px;
+  padding: 15px 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  outline: none;
+  background: #fffef9;
+  color: var(--green);
+  font: inherit;
 }
 
 .catalog-controls input:focus {
-    border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(53, 91, 64, 0.1);
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(53, 91, 64, 0.1);
 }
 
 .catalog-count {
-    margin-top: 12px;
-    color: var(--muted);
-    font-size: 14px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .catalog-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 22px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
 }
+
 
 .catalog-card {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-width: 0;
-    padding: 26px;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    background: #fffef9;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #fffef9;
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
+
 .catalog-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(35, 60, 40, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(35, 60, 40, 0.08);
 }
 
 .catalog-card-symbol {
-    display: grid;
-    width: 48px;
-    height: 48px;
-    place-items: center;
-    margin-bottom: 18px;
-    border-radius: 14px;
-    background: var(--green-light);
-    color: var(--green);
-    font-size: 27px;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  background: var(--green-light);
+  color: var(--green);
+  font-size: 27px;
 }
 
 .catalog-card h3 {
-    margin: 0 0 8px;
-    color: var(--green);
-    font-family: "Playfair Display", serif;
-    font-size: 24px;
+  margin: 0 0 8px;
+  color: var(--green);
+  font-family: "Playfair Display", serif;
+  font-size: 22px;
+  line-height: 1.3;
 }
 
 .catalog-scientific {
-    margin: 0 0 14px;
-    color: var(--muted);
-    font-size: 13px;
-    font-style: italic;
-    overflow-wrap: anywhere;
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: italic;
+  overflow-wrap: anywhere;
 }
 
 .catalog-description {
-    margin: 0 0 22px;
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.7;
-    overflow-wrap: anywhere;
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
 }
+
 
 .catalog-open-button {
-    margin-top: auto;
-    padding: 11px 15px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: transparent;
-    color: var(--green);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease;
+  display: block;
+  width: 100%;
+  margin-top: auto;
+  padding: 12px 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--green);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
+
 .catalog-open-button:hover {
-    background: var(--green-light);
+  background: var(--green-light);
 }
 
 .catalog-empty {
-    grid-column: 1 / -1;
-    padding: 28px;
-    border: 1px dashed var(--border);
-    border-radius: 14px;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.6;
+  grid-column: 1 / -1;
+  padding: 28px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.6;
 }
 
 @media (max-width: 900px) {
-    .catalog-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  .catalog-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 600px) {
-    .catalog-section {
-        padding: 56px 0;
-    }
+  .catalog-section {
+    padding: 56px 0;
+  }
 
-    .catalog-grid {
-        grid-template-columns: 1fr;
-    }
+  .catalog-grid {
+    grid-template-columns: 1fr;
+  }
 
-    .catalog-card {
-        padding: 22px;
-    }
+  .catalog-card {
+    padding: 22px;
+  }
 }
+
 .favorites-section {
-    padding: 80px 0;
-    background: #fffef9;
+  padding: 80px 0;
+  background: #fffef9;
 }
+
+.favorites-section > .container {
+  width: min(100% - 40px, 1200px);
+  margin-inline: auto;
+}
+
 
 .favorites-section h2 {
-    margin: 12px 0 16px;
-    color: var(--green);
-    font-family: "Playfair Display", serif;
-    font-size: clamp(30px, 4vw, 44px);
+  margin: 12px 0 16px;
+  color: var(--green);
+  font-family: "Playfair Display", serif;
+  font-size: clamp(30px, 4vw, 44px);
 }
 
 .favorites-section p {
-    color: var(--muted);
-    line-height: 1.7;
+  color: var(--muted);
+  line-height: 1.7;
 }
 
-
 #favorites-list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 22px;
-    margin-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  margin-top: 30px;
 }
 
 
 #favorites-list .plant-card {
-    min-width: 0;
-    padding: 24px;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    background: #f8f7f0;
-    box-shadow: 0 4px 14px rgba(35, 60, 40, 0.04);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #f8f7f0;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(35, 60, 40, 0.04);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
 
 #favorites-list .plant-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 26px rgba(35, 60, 40, 0.09);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 26px rgba(35, 60, 40, 0.09);
 }
 
-
 #favorites-list h3 {
-    margin: 0 0 10px;
-    color: var(--green);
-    font-family: "Playfair Display", serif;
-    font-size: 24px;
+  margin: 0 0 10px;
+  color: var(--green);
+  font-family: "Playfair Display", serif;
+  font-size: 24px;
 }
 
 #favorites-list p {
-    margin: 8px 0 16px;
-    font-size: 14px;
-    line-height: 1.7;
-    overflow-wrap: anywhere;
+  margin: 8px 0 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
 }
 #favorites-list button {
-    margin: 6px 6px 0 0;
-    padding: 11px 15px;
-    border: 1px solid var(--green);
-    border-radius: 10px;
-    background: var(--green);
-    color: white;
-    font: inherit;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
+  margin: 6px 6px 0 0;
+  padding: 11px 15px;
+  border: 1px solid var(--green);
+  border-radius: 10px;
+  background: var(--green);
+  color: white;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 #favorites-list button:hover {
-    background: transparent;
-    color: var(--green);
+  background: transparent;
+  color: var(--green);
 }
 #favorites-list:empty {
-    display: block;
+  display: block;
 }
 
 .favorites-empty,
 #favorites-list > p {
-    padding: 28px;
-    border: 1px dashed var(--border);
-    border-radius: 14px;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.7;
+  padding: 28px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.7;
 }
 @media (max-width: 900px) {
-    #favorites-list {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  #favorites-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 600px) {
-    .favorites-section {
-        padding: 56px 0;
-    }
+  .favorites-section {
+    padding: 56px 0;
+  }
 
-    #favorites-list {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
+  #favorites-list {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 
-    #favorites-list .plant-card {
-        padding: 20px;
-    }
+  #favorites-list .plant-card {
+    padding: 20px;
+  }
 
-    #favorites-list h3 {
-        font-size: 22px;
-    }
+  #favorites-list h3 {
+    font-size: 22px;
+  }
 
-    #favorites-list button {
-        padding: 10px 12px;
-    }
+  #favorites-list button {
+    padding: 10px 12px;
+  }
 }
 .catalog-card {
-    overflow: hidden;
+  overflow: hidden;
 }
 
 .catalog-card-image,
 .plant-card-image,
 #favorites-list .favorite-plant-image {
-    display: block;
-    width: 100%;
-    height: 200px;
-    margin-bottom: 18px;
-    border-radius: 12px;
-    object-fit: cover;
-    background: #e9eee4;
+  display: block;
+  width: 100%;
+  height: 200px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #e9eee4;
 }
 
 #results .plant-card {
-    overflow: hidden;
+  overflow: hidden;
 }
 
 @media (max-width: 600px) {
-    .catalog-card-image,
-    .plant-card-image,
-    #favorites-list .favorite-plant-image {
-        height: 210px;
-    }
+  .catalog-card-image,
+  .plant-card-image,
+  #favorites-list .favorite-plant-image {
+    height: 210px;
+  }
 }
 #favorites-list .favorite-card {
-    overflow: hidden;
+  overflow: hidden;
 }
 
 #favorites-list .favorite-plant-image {
-    width: 100%;
-    height: 190px;
-    display: block;
-    margin-bottom: 18px;
-    border-radius: 12px;
-    object-fit: cover;
-    background: #e9eee4;
+  width: 100%;
+  height: 190px;
+  display: block;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #e9eee4;
 }
 
 #results .plant-photo {
-    width: 100%;
-    max-width: 260px;
-    height: 200px;
-    display: block;
-    object-fit: cover;
-    border-radius: 14px;
-    background: #e9eee4;
+  width: 100%;
+  max-width: 260px;
+  height: 200px;
+  display: block;
+  object-fit: cover;
+  border-radius: 14px;
+  background: #e9eee4;
 }
 
 @media (max-width: 600px) {
-    #favorites-list .favorite-plant-image {
-        height: 210px;
-    }
+  #favorites-list .favorite-plant-image {
+    height: 210px;
+  }
 
-    #results .plant-photo {
-        max-width: 100%;
-    }
+  #results .plant-photo {
+    max-width: 100%;
+  }
+}
+#favorites-count {
+    margin-left: 4px;
 }
