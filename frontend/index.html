@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plantory — совместимость растений</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/app.js" defer></script>
+  </head>
+  <body>
+    <header class="header">
+      <a href="index.html" class="logo"
+        ><span class="logo-icon">✿</span> Plantory</a
+      >
+      <nav class="nav">
+        <a href="#about">О проекте</a>
+        <a href="#search">Поиск растений</a>
+
+        <a href="#favorites" id="favorites-link">
+          Избранное <span id="favorites-count">0</span>
+        </a>
+
+        <a href="#how-it-works">Как это работает</a>
+      </nav>
+      <a href="#search" class="header-button">Найти растение <span>↗</span></a>
+    </header>
+    <main>
+      <section class="hero" id="about">
+        <div class="hero-content">
+          <div class="eyebrow">
+            <span class="status-dot"></span> СПРАВОЧНИК СОВМЕСТИМОСТИ РАСТЕНИЙ
+          </div>
+          <h1>Хорошие соседи<br />начинаются <span>здесь.</span></h1>
+          <p class="hero-description">
+            Узнайте, какие растения помогают друг другу расти, а какие лучше
+            посадить подальше. Создавайте гармоничный сад с помощью научных
+            данных.
+          </p>
+          <a href="#search" class="primary-button"
+            >Подобрать соседей <span>↓</span></a
+          >
+          <div class="hero-note">
+            <span>✳</span> Больше знаний — лучше урожай
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="image-frame">
+            <img
+              src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1000&q=85"
+              alt="Зелёные растения в саду"
+            />
+            <div class="image-label"><span>01 /</span> РАСТИТЕ В ГАРМОНИИ</div>
+          </div>
+          <div class="floating-card">
+            <span class="floating-icon">✿</span>
+            <div>
+              <strong>Каждому своё место</strong>
+              <p>Найдите идеальных соседей</p>
+            </div>
+          </div>
+          <div class="decorative-circle"></div>
+        </div>
+        <div class="hero-index">PLANTORY / 001</div>
+      </section>
+      <section class="search-section" id="search">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">ВАШ САД НАЧИНАЕТСЯ С ПОИСКА</div>
+            <h2>Кто с кем <span>дружит?</span></h2>
+          </div>
+          <p>
+            Введите название растения, чтобы узнать о его совместимости с
+            другими культурами.
+          </p>
+        </div>
+        <form class="search-form" id="search-form">
+          <span class="search-icon">⌕</span>
+          <input
+            type="text"
+            id="plant-search"
+            placeholder="Например, томат или базилик..."
+            autocomplete="off"
+          />
+
+          <div id="suggestions" class="suggestions" hidden></div>
+
+          <button type="submit">Найти растение <span>→</span></button>
+        </form>
+        <div class="popular-searches">
+          <span>ПОПУЛЯРНЫЕ ЗАПРОСЫ</span>
+          <button type="button" class="search-tag" data-plant="Томат">
+            Томат
+          </button>
+          <button type="button" class="search-tag" data-plant="Базилик">
+            Базилик
+          </button>
+          <button type="button" class="search-tag" data-plant="Картофель">
+            Картофель
+          </button>
+        </div>
+        <div class="results" id="results">
+          <div class="empty-state">
+            <div class="empty-icon">⌕</div>
+            <h3>Найдём соседей для вашего растения</h3>
+            <p>
+              Введите название растения в поле выше, и здесь появятся результаты
+              поиска.
+            </p>
+          </div>
+        </div>
+      </section>
+      <section class="favorites-section" id="favorites">
+        <div class="container">
+          <div class="favorites-heading">
+            <div>
+              <h2>Избранные растения</h2>
+              <p>Твои сохранённые растения в одном месте.</p>
+            </div>
+            <span class="favorites-total">Избранное</span>
+          </div>
+          <div class="favorites-list" id="favorites-list">
+            <p class="favorites-empty">
+              Пока нет избранных растений. Добавь их с помощью кнопки «В
+              избранное».
+            </p>
+          </div>
+        </div>
+      </section>
+      <section class="how-section" id="how-it-works">
+        <div class="eyebrow">ПРОСТО И ПОНЯТНО</div>
+        <h2>Три шага к <span>гармоничному саду</span></h2>
+        <div class="steps">
+          <article class="step-card">
+            <span class="step-number">01</span>
+            <div class="step-icon">⌕</div>
+            <h3>Найдите растение</h3>
+            <p>
+              Введите название культуры, которую планируете посадить в своём
+              саду или огороде.
+            </p>
+          </article>
+          <article class="step-card">
+            <span class="step-number">02</span>
+            <div class="step-icon">❋</div>
+            <h3>Изучите соседей</h3>
+            <p>
+              Посмотрите, какие растения совместимы, какие нежелательны и
+              почему.
+            </p>
+          </article>
+          <article class="step-card">
+            <span class="step-number">03</span>
+            <div class="step-icon">♧</div>
+            <h3>Планируйте посадки</h3>
+            <p>
+              Используйте сведения справочника, чтобы продумать размещение
+              растений.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="bottom-banner">
+        <div>
+          <div class="eyebrow">ПРИРОДА ЛЮБИТ СОЧЕТАНИЯ</div>
+          <h2>Пусть ваш сад<br />растёт в гармонии.</h2>
+        </div>
+        <a href="#search" class="banner-button">Начать поиск <span>↗</span></a>
+        <div class="banner-decoration">✿</div>
+      </section>
+    </main>
+    <footer class="footer">
+      <a href="index.html" class="logo"
+        ><span class="logo-icon">✿</span> Plantory</a
+      >
+      <p>Справочник совместимости растений</p>
+      <span>© 2026 Plantory</span>
+    </footer>
+    <script src="js/app.js" defer></script>
+  </body>
+</html>
