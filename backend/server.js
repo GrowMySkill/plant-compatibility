@@ -35,35 +35,42 @@ function getPlants() {
             ORDER BY id
         `).all(String(plant.id)).map(row => row.tip),
         compatible: db.prepare(`
-            SELECT
-                related_plant_name AS name,
-                reason,
-                verified
-            FROM plant_relationships
-            WHERE plant_id = ? AND relationship_type = 'compatible'
-            ORDER BY id
+SELECT
+    p.name AS name,
+    r.reason,
+    r.verified
+FROM plant_relationships r
+JOIN plants p ON p.id = r.related_plant_id
+WHERE r.plant_id = ?
+    AND r.relationship_type = 'compatible'
+ORDER BY r.id
         `).all(String(plant.id)).map(row => ({
             ...row,
             verified: Boolean(row.verified)
         })),
+
         incompatible: db.prepare(`
-            SELECT
-                related_plant_name AS name,
-                reason,
-                verified
-            FROM plant_relationships
-            WHERE plant_id = ? AND relationship_type = 'incompatible'
-            ORDER BY id
-        `).all(String(plant.id)).map(row => ({
+    SELECT
+        p.name AS name,
+        r.reason,
+        r.verified
+    FROM plant_relationships r
+    JOIN plants p ON p.id = r.related_plant_id
+    WHERE r.plant_id = ?
+        AND r.relationship_type = 'incompatible'
+    ORDER BY r.id
+`).all(String(plant.id)).map(row => ({
             ...row,
             verified: Boolean(row.verified)
         }))
+
     }));
 }
 
 app.get("/api/plants", (req, res) => {
     res.json(getPlants());
 });
+
 
 app.get("/api/plants/catalog", (req, res) => {
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
@@ -72,24 +79,53 @@ app.get("/api/plants/catalog", (req, res) => {
         Math.max(1, Number.parseInt(req.query.limit, 10) || 24)
     );
     const offset = (page - 1) * limit;
+    const query = (req.query.q || "").trim();
+    const search = `%${query.replace(/[\\%_]/g, "\\$&")}%`;
 
     try {
-        const total = db.prepare(`
-            SELECT COUNT(*) AS count
-            FROM plants
-        `).get().count;
+        const total = query
+            ? db.prepare(`
+                SELECT COUNT(DISTINCT p.id) AS count
+                FROM plants p
+                LEFT JOIN plant_synonyms s ON s.plant_id = p.id
+                WHERE
+                    p.name LIKE ? ESCAPE '\\'
+                    OR p.scientific_name LIKE ? ESCAPE '\\'
+                    OR s.synonym LIKE ? ESCAPE '\\'
+            `).get(search, search, search).count
+            : db.prepare(`
+                SELECT COUNT(*) AS count
+                FROM plants
+            `).get().count;
 
-        const plants = db.prepare(`
-            SELECT
-                id,
-                name,
-                scientific_name AS scientificName,
-                description,
-                image
-            FROM plants
-            ORDER BY name COLLATE NOCASE, id
-            LIMIT ? OFFSET ?
-        `).all(limit, offset);
+        const plants = query
+            ? db.prepare(`
+                SELECT DISTINCT
+                    p.id,
+                    p.name,
+                    p.scientific_name AS scientificName,
+                    p.description,
+                    p.image
+                FROM plants p
+                LEFT JOIN plant_synonyms s ON s.plant_id = p.id
+                WHERE
+                    p.name LIKE ? ESCAPE '\\'
+                    OR p.scientific_name LIKE ? ESCAPE '\\'
+                    OR s.synonym LIKE ? ESCAPE '\\'
+                ORDER BY p.name COLLATE NOCASE, p.id
+                LIMIT ? OFFSET ?
+            `).all(search, search, search, limit, offset)
+            : db.prepare(`
+                SELECT
+                    id,
+                    name,
+                    scientific_name AS scientificName,
+                    description,
+                    image
+                FROM plants
+                ORDER BY name COLLATE NOCASE, id
+                LIMIT ? OFFSET ?
+            `).all(limit, offset);
 
         res.json({
             plants,
@@ -105,8 +141,6 @@ app.get("/api/plants/catalog", (req, res) => {
         });
     }
 });
-
-
 
 app.get("/api/plants/suggestions", (req, res) => {
     const query = (req.query.q || "").trim();
@@ -141,7 +175,6 @@ app.get("/api/plants/suggestions", (req, res) => {
         });
     }
 });
-
 
 
 app.get("/api/plants/search", (req, res) => {
@@ -199,15 +232,18 @@ app.get("/api/plants/search", (req, res) => {
             ORDER BY id
         `);
 
+
         const getRelationships = db.prepare(`
-            SELECT
-                related_plant_name AS name,
-                reason,
-                verified
-            FROM plant_relationships
-            WHERE plant_id = ? AND relationship_type = ?
-            ORDER BY id
-        `);
+    SELECT
+        p.name AS name,
+        r.reason,
+        r.verified
+    FROM plant_relationships r
+    JOIN plants p ON p.id = r.related_plant_id
+    WHERE r.plant_id = ? AND r.relationship_type = ?
+    ORDER BY r.id
+`);
+
 
         const plants = matches.map(({ id }) => {
             const plant = getPlantById.get(id);

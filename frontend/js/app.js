@@ -251,13 +251,21 @@ function renderPlant(plant) {
     favoriteButton.classList.toggle("is-favorite", isFavorite(plant.id));
 }
 
+let activeSuggestionIndex = -1;
 
 async function loadSuggestions(query) {
-    if (!query.trim()) {
-        suggestionsContainer.hidden = true;
-        suggestionsContainer.innerHTML = "";
+
+    if (!Array.isArray(plants) || plants.length === 0) {
+        suggestionsContainer.innerHTML = `
+        <div class="suggestion-empty">
+            <strong>Растение не найдено</strong>
+            <span>Попробуйте другое название или научное имя.</span>
+        </div>
+    `;
+        suggestionsContainer.hidden = false;
         return;
     }
+
 
     const requestId = {};
     suggestionsRequest = requestId;
@@ -267,13 +275,17 @@ async function loadSuggestions(query) {
             `/api/plants/suggestions?q=${encodeURIComponent(query)}`
         );
 
+        if (!response.ok) {
+            throw new Error(`Ошибка сервера: ${response.status}`);
+        }
+
         const plants = await response.json();
 
         if (suggestionsRequest !== requestId) {
             return;
         }
 
-        if (!response.ok || plants.length === 0) {
+        if (!Array.isArray(plants) || plants.length === 0) {
             suggestionsContainer.hidden = true;
             suggestionsContainer.innerHTML = "";
             return;
@@ -302,6 +314,11 @@ async function loadSuggestions(query) {
             });
         });
     } catch (error) {
+        if (suggestionsRequest === requestId) {
+            suggestionsContainer.hidden = true;
+            suggestionsContainer.innerHTML = "";
+        }
+
         console.error("Ошибка загрузки подсказок:", error);
     }
 }
@@ -401,65 +418,206 @@ searchTags.forEach(tag => {
     });
 });
 
+
 searchInput.addEventListener("input", () => {
+    activeSuggestionIndex = -1;
     loadSuggestions(searchInput.value);
 });
+
+searchInput.addEventListener("keydown", event => {
+    const buttons = suggestionsContainer.querySelectorAll(".suggestion-item");
+
+    if (event.key === "Escape") {
+        suggestionsContainer.hidden = true;
+        activeSuggestionIndex = -1;
+        return;
+    }
+
+    if (suggestionsContainer.hidden || buttons.length === 0) {
+        return;
+    }
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+
+        if (event.key === "ArrowDown") {
+            activeSuggestionIndex =
+                (activeSuggestionIndex + 1) % buttons.length;
+        } else {
+            activeSuggestionIndex =
+                (activeSuggestionIndex - 1 + buttons.length) % buttons.length;
+        }
+
+        buttons.forEach((button, index) => {
+            button.classList.toggle(
+                "is-active",
+                index === activeSuggestionIndex
+            );
+        });
+
+        return;
+    }
+
+    if (event.key === "Enter" && activeSuggestionIndex >= 0) {
+        event.preventDefault();
+        buttons[activeSuggestionIndex].click();
+    }
+});
+
 
 document.addEventListener("click", hideSuggestionsOnOutsideClick);
 const catalogSearch = document.querySelector("#catalog-search");
 const catalogGrid = document.querySelector("#catalog-grid");
 const catalogCount = document.querySelector("#catalog-count");
+let catalogPage = 1;
+const catalogLimit = 24;
+let catalogRequestId = 0;
+let catalogTotalPages = 1;
+let catalogSearchTimer;
 
 let catalogPlants = [];
 
-async function loadCatalog() {
+
+async function loadCatalog(page = 1) {
     if (!catalogGrid || !catalogCount) return;
+    const requestId = ++catalogRequestId;
+
+    catalogPage = page;
+
+    const pagination = document.getElementById("catalog-pagination");
+    const searchInput = document.getElementById("catalog-search");
+    const query = searchInput ? searchInput.value.trim() : "";
+
+    catalogGrid.innerHTML = `
+        <p class="catalog-empty">Загружаем растения...</p>
+    `;
 
     try {
-        const response = await fetch("/api/plants");
+        const params = new URLSearchParams({
+            page: String(catalogPage),
+            limit: String(catalogLimit),
+            q: query
+        });
+
+        const response = await fetch(
+            `/api/plants/catalog?${params.toString()}`
+        );
 
         if (!response.ok) {
             throw new Error("Не удалось загрузить каталог");
         }
 
         const data = await response.json();
-        catalogPlants = Array.isArray(data) ? data : data.plants || [];
+        if (requestId !== catalogRequestId) return;
+
+        catalogPlants = data.plants || [];
+        catalogPage = data.page;
+        catalogTotalPages = data.totalPages;
+
+        catalogCount.textContent =
+            `Найдено растений: ${data.total}`;
 
         renderCatalog(catalogPlants);
+        renderCatalogPagination(pagination);
     } catch (error) {
+        if (requestId !== catalogRequestId) return;
         catalogCount.textContent = "Не удалось загрузить растения";
         catalogGrid.innerHTML = `
             <p class="catalog-empty">
                 Проверь, запущен ли сервер, и обнови страницу.
             </p>
         `;
+
+        if (pagination) {
+            pagination.innerHTML = "";
+        }
+
         console.error("Ошибка каталога:", error);
     }
 }
 
-function renderCatalog(plants) {
-    catalogCount.textContent = `Растений в каталоге: ${plants.length}`;
+function renderCatalogPagination(container) {
+    if (!container) return;
 
-    if (plants.length === 0) {
-        catalogGrid.innerHTML = `
-            <p class="catalog-empty">
-                Растения не найдены. Попробуй изменить запрос.
-            </p>
-        `;
+    if (catalogTotalPages <= 1) {
+        container.innerHTML = "";
         return;
     }
 
+    container.innerHTML = `
+        <button
+            type="button"
+            class="catalog-page-button"
+            data-catalog-page="${catalogPage - 1}"
+            ${catalogPage === 1 ? "disabled" : ""}
+        >← Назад</button>
+
+        <span class="catalog-page-info">
+            Страница ${catalogPage} из ${catalogTotalPages}
+        </span>
+
+        <button
+            type="button"
+            class="catalog-page-button"
+            data-catalog-page="${catalogPage + 1}"
+            ${catalogPage === catalogTotalPages ? "disabled" : ""}
+        >Вперёд →
+        </button>
+    `;
+
+    container.querySelectorAll("[data-catalog-page]").forEach(button => {
+        button.addEventListener("click", () => {
+            loadCatalog(Number(button.dataset.catalogPage));
+        });
+    });
+}
+
+
+function renderCatalog(plants) {
+    catalogCount.textContent = `Растений в каталоге: ${plants.length}`;
+
+
+    if (plants.length === 0) {
+        const searchInput = document.getElementById("catalog-search");
+
+        catalogGrid.innerHTML = `
+        <div class="catalog-empty-state">
+            <p class="catalog-empty">
+                Растения не найдены. Попробуй изменить запрос.
+            </p>
+            <button type="button" class="catalog-reset-button">
+                Сбросить поиск
+            </button>
+        </div>
+    `;
+
+        const resetButton = catalogGrid.querySelector(".catalog-reset-button");
+
+        resetButton.addEventListener("click", () => {
+            if (searchInput) {
+                searchInput.value = "";
+                searchInput.focus();
+            }
+
+            loadCatalog(1);
+        });
+
+        return;
+    }
+
+
     catalogGrid.innerHTML = plants.map(plant => `
         <article class="catalog-card">
-            ${plant.image
+${plant.image
             ? `<img
         class="catalog-card-image"
         src="${escapeHTML(plant.image)}"
         alt="${escapeHTML(plant.name)}"
         loading="lazy"
-        onerror="this.style.display='none'"
+        onerror="this.outerHTML='<div class=&quot;catalog-card-symbol&quot;>♧</div>'"
     >`
             : '<div class="catalog-card-symbol">♧</div>'}
+
             <h3>${escapeHTML(plant.name)}</h3>
             <p class="catalog-scientific">
                 ${escapeHTML(plant.scientificName || "Научное название не указано")}
@@ -482,25 +640,16 @@ function renderCatalog(plants) {
     });
 }
 
+
 if (catalogSearch) {
     catalogSearch.addEventListener("input", () => {
-        const query = catalogSearch.value.trim().toLowerCase();
+        clearTimeout(catalogSearchTimer);
 
-        const filteredPlants = catalogPlants.filter(plant => {
-            const name = (plant.name || "").toLowerCase();
-            const scientificName = (plant.scientificName || "").toLowerCase();
-
-            const synonyms = Array.isArray(plant.synonyms)
-                ? plant.synonyms.join(" ").toLowerCase()
-                : "";
-
-            return name.includes(query)
-                || scientificName.includes(query)
-                || synonyms.includes(query);
-        });
-
-        renderCatalog(filteredPlants);
+        catalogSearchTimer = setTimeout(() => {
+            loadCatalog(1);
+        }, 300);
     });
 }
+
 
 loadCatalog();

@@ -31,15 +31,16 @@ db.exec(`
         tip TEXT NOT NULL,
         FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE CASCADE
     );
-
     CREATE TABLE IF NOT EXISTS plant_relationships (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         plant_id TEXT NOT NULL,
         related_plant_name TEXT NOT NULL,
-        relationship_type TEXT NOT NULL CHECK (relationship_type IN ('compatible', 'incompatible')),
-        reason TEXT,
+        related_plant_id TEXT,
+relationship_type TEXT NOT NULL CHECK (relationship_type IN ('compatible', 'incompatible')),
+reason TEXT,
         verified INTEGER NOT NULL DEFAULT 0,
-        FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE CASCADE
+        FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE CASCADE,
+        FOREIGN KEY (related_plant_id) REFERENCES plants(id) ON DELETE CASCADE
     );
 
     CREATE INDEX IF NOT EXISTS idx_plant_synonyms_plant_id
@@ -87,11 +88,19 @@ function initializeDatabase() {
             VALUES (?, ?)
         `);
 
+
         const insertRelationship = db.prepare(`
-            INSERT INTO plant_relationships
-            (plant_id, related_plant_name, relationship_type, reason, verified)
-            VALUES (?, ?, ?, ?, ?)
-        `);
+    INSERT INTO plant_relationships
+    (
+        plant_id,
+        related_plant_name,
+        related_plant_id,
+        relationship_type,
+        reason,
+        verified
+    )
+    VALUES (?, ?, ?, ?, ?, ?)
+`);
 
         for (const plant of data.plants) {
             const id = String(plant.id);
@@ -103,6 +112,16 @@ function initializeDatabase() {
                 plant.description || "",
                 plant.image || ""
             );
+        }
+
+        const findPlantId = db.prepare(`
+    SELECT id
+    FROM plants
+    WHERE name = ? COLLATE NOCASE
+`);
+
+        for (const plant of data.plants) {
+            const id = String(plant.id);
 
             for (const synonym of plant.synonyms || []) {
                 insertSynonym.run(id, synonym);
@@ -113,9 +132,18 @@ function initializeDatabase() {
             }
 
             for (const relation of plant.compatible || []) {
+                const relatedPlant = findPlantId.get(relation.name);
+
+                if (!relatedPlant) {
+                    throw new Error(
+                        `Не найдено растение "${relation.name}", связанное с "${plant.name}"`
+                    );
+                }
+
                 insertRelationship.run(
                     id,
                     relation.name,
+                    String(relatedPlant.id),
                     "compatible",
                     relation.reason || "",
                     relation.verified ? 1 : 0
@@ -123,9 +151,18 @@ function initializeDatabase() {
             }
 
             for (const relation of plant.incompatible || []) {
+                const relatedPlant = findPlantId.get(relation.name);
+
+                if (!relatedPlant) {
+                    throw new Error(
+                        `Не найдено растение "${relation.name}", связанное с "${plant.name}"`
+                    );
+                }
+
                 insertRelationship.run(
                     id,
                     relation.name,
+                    String(relatedPlant.id),
                     "incompatible",
                     relation.reason || "",
                     relation.verified ? 1 : 0
